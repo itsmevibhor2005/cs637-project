@@ -6,11 +6,13 @@ from uuid import uuid4
 from app.hardware.esp32 import ESP32Bridge
 from app.models import Phase
 from app.state import StateStore
-from app.traffic.safety import signals_for, validate_transition
+from app.traffic.safety import GREEN_PHASES, YELLOW_FOR_GREEN, signals_for, validate_transition
 from app.traffic.scheduler import AdaptiveScheduler
 
 
 class TrafficController:
+    PHASE_ORDER = (Phase.N_GREEN, Phase.E_GREEN, Phase.S_GREEN, Phase.W_GREEN)
+
     def __init__(
         self,
         store: StateStore,
@@ -34,7 +36,7 @@ class TrafficController:
         self._shutdown = True
 
     async def run(self) -> None:
-        next_green = Phase.NS_GREEN
+        next_green = Phase.N_GREEN
         while not self._shutdown:
             state = await self.store.snapshot()
             if not state.running:
@@ -45,18 +47,17 @@ class TrafficController:
 
             if not self._manual.empty():
                 requested, duration = await self._manual.get()
-                if requested in (Phase.NS_GREEN, Phase.EW_GREEN):
+                if requested in GREEN_PHASES:
                     await self._safe_move_to(requested, duration)
-                    next_green = Phase.EW_GREEN if requested == Phase.NS_GREEN else Phase.NS_GREEN
+                    next_green = self._next_after(requested)
                     continue
 
             snapshot = await self.store.snapshot()
             duration = self.scheduler.green_duration(next_green, snapshot.traffic)
             await self._set_phase(next_green, duration)
-            yellow = Phase.NS_YELLOW if next_green == Phase.NS_GREEN else Phase.EW_YELLOW
-            await self._set_phase(yellow, self.yellow_seconds)
+            await self._set_phase(YELLOW_FOR_GREEN[next_green], self.yellow_seconds)
             await self._set_phase(Phase.ALL_RED, self.all_red_seconds)
-            next_green = Phase.EW_GREEN if next_green == Phase.NS_GREEN else Phase.NS_GREEN
+            next_green = self._next_after(next_green)
             after = await self.store.snapshot()
             await self.store.patch(cycle=after.cycle + 1, next_phase=next_green)
 
@@ -65,20 +66,16 @@ class TrafficController:
         if current == target:
             await self._set_phase(target, duration, allow_same=True)
             return
-        if current == Phase.NS_GREEN:
-            await self._set_phase(Phase.NS_YELLOW, self.yellow_seconds)
-        elif current == Phase.EW_GREEN:
-            await self._set_phase(Phase.EW_YELLOW, self.yellow_seconds)
+        if current in GREEN_PHASES:
+            await self._set_phase(YELLOW_FOR_GREEN[current], self.yellow_seconds)
         if (await self.store.snapshot()).phase != Phase.ALL_RED:
             await self._set_phase(Phase.ALL_RED, self.all_red_seconds)
         await self._set_phase(target, duration)
 
     async def _force_all_red(self) -> None:
         current = (await self.store.snapshot()).phase
-        if current == Phase.NS_GREEN:
-            await self._set_phase(Phase.NS_YELLOW, self.yellow_seconds)
-        elif current == Phase.EW_GREEN:
-            await self._set_phase(Phase.EW_YELLOW, self.yellow_seconds)
+        if current in GREEN_PHASES:
+            await self._set_phase(YELLOW_FOR_GREEN[current], self.yellow_seconds)
         if (await self.store.snapshot()).phase != Phase.ALL_RED:
             await self._set_phase(Phase.ALL_RED, self.all_red_seconds)
         else:
@@ -98,7 +95,7 @@ class TrafficController:
             "last_ack": ack if ok else state.esp32.last_ack,
             "last_error": None if ok else ack,
         })
-        await self.store.patch(
+        changes = dict(
             phase=phase,
             signals=signals_for(phase),
             remaining=duration,
@@ -106,13 +103,16 @@ class TrafficController:
             esp32=esp,
             last_transition_id=uuid4().hex[:10],
         )
+        if phase in GREEN_PHASES:
+            changes["next_phase"] = self._next_after(phase)
+        await self.store.patch(**changes)
 
         deadline = time.monotonic() + duration
         last_remaining = duration
         while not self._shutdown:
             state = await self.store.snapshot()
             # A stop may shorten a green, but never the safety clearance phases.
-            if not state.running and phase in (Phase.NS_GREEN, Phase.EW_GREEN):
+            if not state.running and phase in GREEN_PHASES:
                 break
             remaining = max(0, math.ceil(deadline - time.monotonic()))
             if remaining != last_remaining:
@@ -121,3 +121,7 @@ class TrafficController:
             if remaining <= 0:
                 break
             await asyncio.sleep(0.1)
+
+    def _next_after(self, phase: Phase) -> Phase:
+        index = self.PHASE_ORDER.index(phase)
+        return self.PHASE_ORDER[(index + 1) % len(self.PHASE_ORDER)]

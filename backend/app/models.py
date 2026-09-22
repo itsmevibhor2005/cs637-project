@@ -20,10 +20,14 @@ class SignalColor(StrEnum):
 
 
 class Phase(StrEnum):
-    NS_GREEN = "NS_GREEN"
-    NS_YELLOW = "NS_YELLOW"
-    EW_GREEN = "EW_GREEN"
-    EW_YELLOW = "EW_YELLOW"
+    N_GREEN = "N_GREEN"
+    N_YELLOW = "N_YELLOW"
+    E_GREEN = "E_GREEN"
+    E_YELLOW = "E_YELLOW"
+    S_GREEN = "S_GREEN"
+    S_YELLOW = "S_YELLOW"
+    W_GREEN = "W_GREEN"
+    W_YELLOW = "W_YELLOW"
     ALL_RED = "ALL_RED"
 
 
@@ -49,7 +53,7 @@ class SystemState(BaseModel):
     ai_running: bool = False
     ai_mode: str = "mock"
     phase: Phase = Phase.ALL_RED
-    next_phase: Phase = Phase.NS_GREEN
+    next_phase: Phase = Phase.N_GREEN
     remaining: int = 0
     phase_duration: int = 0
     signals: dict[Direction, SignalColor] = Field(default_factory=dict)
@@ -70,4 +74,3 @@ class ManualPhaseRequest(BaseModel):
 class SystemCommandResponse(BaseModel):
     ok: bool
     message: str
-

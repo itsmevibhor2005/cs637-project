@@ -10,6 +10,14 @@ from app.traffic.scheduler import AdaptiveScheduler
 from app.vision.analyzer import aggregate_detections
 
 
+GREEN_FOR_DIRECTION = {
+    Direction.N: Phase.N_GREEN,
+    Direction.E: Phase.E_GREEN,
+    Direction.S: Phase.S_GREEN,
+    Direction.W: Phase.W_GREEN,
+}
+
+
 class VisionService:
     def __init__(
         self,
@@ -49,13 +57,7 @@ class VisionService:
                 wave = (math.sin(tick / 8 + index * 1.7) + 1) / 2
                 vehicles = max(0, round(3 + 13 * wave + random.uniform(-1.5, 1.5)))
                 queue = max(0, round(vehicles * random.uniform(0.45, 0.8)))
-                was_waiting = (
-                    direction in (Direction.N, Direction.S)
-                    and state.phase != Phase.NS_GREEN
-                ) or (
-                    direction in (Direction.E, Direction.W)
-                    and state.phase != Phase.EW_GREEN
-                )
+                was_waiting = state.phase != GREEN_FOR_DIRECTION[direction]
                 previous_wait = state.traffic[direction].waiting_seconds
                 wait = previous_wait + 1 if was_waiting and vehicles else 0.0
                 traffic[direction] = ApproachState(
@@ -117,11 +119,7 @@ class VisionService:
                 old = await self.store.snapshot()
                 for direction, approach in measured.items():
                     waiting = old.traffic[direction].waiting_seconds
-                    green = (
-                        old.phase == Phase.NS_GREEN
-                        if direction in (Direction.N, Direction.S)
-                        else old.phase == Phase.EW_GREEN
-                    )
+                    green = old.phase == GREEN_FOR_DIRECTION[direction]
                     approach.waiting_seconds = 0 if green or approach.vehicles == 0 else waiting + 0.2
                 measured = self.scheduler.enrich_demands(measured)
 
@@ -148,4 +146,3 @@ class VisionService:
             if frame:
                 yield b"--frame\r\nContent-Type: image/jpeg\r\n\r\n" + frame + b"\r\n"
             await asyncio.sleep(0.08)
-

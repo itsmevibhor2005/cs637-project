@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException, Query, Request
 from fastapi.responses import StreamingResponse
 
 from app.models import ManualPhaseRequest, Phase, SystemCommandResponse
+from app.traffic.safety import GREEN_PHASES
 
 
 router = APIRouter(prefix="/api")
@@ -47,8 +48,8 @@ async def stop(request: Request):
 
 @router.post("/manual/phase", response_model=SystemCommandResponse)
 async def manual_phase(command: ManualPhaseRequest, request: Request):
-    if command.phase not in (Phase.NS_GREEN, Phase.EW_GREEN):
-        raise HTTPException(400, "Manual control accepts NS_GREEN or EW_GREEN only")
+    if command.phase not in GREEN_PHASES:
+        raise HTTPException(400, "Manual control accepts N/E/S/W green phases only")
     state = await request.app.state.store.snapshot()
     if not state.running:
         raise HTTPException(409, "Start the controller before using manual phase control")
@@ -64,4 +65,3 @@ async def video(request: Request):
         request.app.state.vision.mjpeg(),
         media_type="multipart/x-mixed-replace; boundary=frame",
     )
-

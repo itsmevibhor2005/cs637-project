@@ -3,6 +3,14 @@ from dataclasses import dataclass
 from app.models import ApproachState, Direction, Phase
 
 
+PHASE_DIRECTION = {
+    Phase.N_GREEN: Direction.N,
+    Phase.E_GREEN: Direction.E,
+    Phase.S_GREEN: Direction.S,
+    Phase.W_GREEN: Direction.W,
+}
+
+
 @dataclass(frozen=True)
 class SchedulerConfig:
     min_green: int = 10
@@ -35,25 +43,16 @@ class AdaptiveScheduler:
         }
 
     def phase_score(self, phase: Phase, traffic: dict[Direction, ApproachState]) -> float:
-        directions = (
-            (Direction.N, Direction.S)
-            if phase == Phase.NS_GREEN
-            else (Direction.E, Direction.W)
-        )
-        return sum(self.approach_demand(traffic[d]) for d in directions)
+        direction = PHASE_DIRECTION[phase]
+        return self.approach_demand(traffic[direction])
 
     def green_duration(self, phase: Phase, traffic: dict[Direction, ApproachState]) -> int:
-        directions = (
-            (Direction.N, Direction.S)
-            if phase == Phase.NS_GREEN
-            else (Direction.E, Direction.W)
-        )
+        direction = PHASE_DIRECTION[phase]
         score = self.phase_score(phase, traffic)
         duration = round(self.config.base_green + self.config.demand_factor * score)
 
-        # A phase that has waited too long receives at least half of the available range.
-        if any(traffic[d].waiting_seconds >= self.config.max_wait_seconds for d in directions):
+        # An approach that has waited too long receives at least half the available range.
+        if traffic[direction].waiting_seconds >= self.config.max_wait_seconds:
             duration = max(duration, (self.config.min_green + self.config.max_green) // 2)
 
         return max(self.config.min_green, min(self.config.max_green, duration))
-
