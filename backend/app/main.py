@@ -4,14 +4,20 @@ from contextlib import asynccontextmanager, suppress
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 
+import logging
+
 from app.api.routes import router
 from app.api.websocket import WebSocketHub
 from app.config import settings
+from app.hardware.composite_bridge import CompositeBridge
 from app.hardware.esp32 import MockESP32Bridge, SerialESP32Bridge
+from app.hardware.sumo_bridge import SumoBridge
 from app.state import StateStore
 from app.traffic.controller import TrafficController
 from app.traffic.scheduler import AdaptiveScheduler, SchedulerConfig
 from app.vision.service import VisionService
+
+log = logging.getLogger(__name__)
 
 
 async def broadcaster(app: FastAPI) -> None:
@@ -35,6 +41,27 @@ async def lifespan(app: FastAPI):
         if settings.serial_mode == "serial"
         else MockESP32Bridge()
     )
+    log.info(
+        "[SUMO] Enabled=%s GUI=%s step_length=%s traffic_mode=%s serial_mode=%s",
+        settings.sumo_enabled,
+        settings.sumo_gui,
+        settings.sumo_step_length,
+        settings.traffic_mode,
+        settings.serial_mode,
+    )
+    # ── SUMO integration (opt-in via SUMO_ENABLED=true) ──────────────────
+    # Wrap the ESP32 bridge in a CompositeBridge so every set_phase() call
+    # is forwarded to both the physical hardware and the SUMO simulation.
+    # The TrafficController is unaware of this and requires no changes.
+    if settings.sumo_enabled:
+        log.info("[SUMO] Initializing SumoBridge with cfg=%s", settings.sumo_cfg)
+        sumo_bridge = SumoBridge(
+            cfg_path=settings.sumo_cfg,
+            gui=settings.sumo_gui,
+            step_length=settings.sumo_step_length,
+        )
+        bridge = CompositeBridge(bridge, sumo_bridge)
+
     vision = VisionService(
         store,
         scheduler,
