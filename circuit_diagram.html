@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ESP32 12-LED 4-Way Traffic Signal Circuit Diagram</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #0f172a;
+      color: #f8fafc;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    h1 {
+      margin: 10px 0 5px 0;
+      font-size: 24px;
+      color: #38bdf8;
+    }
+    p {
+      margin: 0 0 20px 0;
+      color: #94a3b8;
+      font-size: 14px;
+    }
+    .card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      max-width: 1100px;
+      width: 100%;
+    }
+    svg {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+    .legend {
+      display: flex;
+      gap: 24px;
+      justify-content: center;
+      margin-top: 15px;
+      font-size: 13px;
+      color: #cbd5e1;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .legend-color {
+      width: 14px;
+      height: 14px;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>ESP32 4-Way Traffic Signal — Exact 2-Pin LED Circuit</h1>
+  <p>Every LED has strictly <b>2 legs</b>: Anode (+) with 220Ω resistor to GPIO, and Cathode (–) directly to Ground.</p>
+
+  <div class="card">
+    <svg viewBox="0 0 1050 820" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <!-- LED glow filters -->
+        <filter id="glow-red" x="-20%" y="-20%" width="140%" height="140%">
+          <feDropShadow dx="0" dy="0" stdDeviation="3" flood-color="#ef4444" flood-opacity="0.6"/>
+        </filter>
+        <filter id="glow-yellow" x="-20%" y="-20%" width="140%" height="140%">
+          <feDropShadow dx="0" dy="0" stdDeviation="3" flood-color="#eab308" flood-opacity="0.6"/>
+        </filter>
+        <filter id="glow-green" x="-20%" y="-20%" width="140%" height="140%">
+          <feDropShadow dx="0" dy="0" stdDeviation="3" flood-color="#22c55e" flood-opacity="0.6"/>
+        </filter>
+      </defs>
+
+      <!-- Common Ground Bus Line -->
+      <path d="M 60 770 L 990 770" stroke="#38bdf8" stroke-width="4" stroke-dasharray="6,4" fill="none"/>
+      <text x="525" y="795" text-anchor="middle" fill="#38bdf8" font-size="14" font-weight="bold">COMMON GND BUS RAIL (Connects all 12 LED Cathodes to ESP32 GND)</text>
+
+      <!-- ==================== ESP32 BOARD (CENTER) ==================== -->
+      <g transform="translate(425, 230)">
+        <!-- Board Body -->
+        <rect x="0" y="0" width="200" height="340" rx="10" fill="#090d16" stroke="#475569" stroke-width="2"/>
+        <!-- Metal Shield -->
+        <rect x="30" y="25" width="140" height="130" rx="6" fill="#334155" stroke="#64748b" stroke-width="1.5"/>
+        <text x="100" y="80" text-anchor="middle" fill="#f8fafc" font-size="14" font-weight="bold">ESP32</text>
+        <text x="100" y="100" text-anchor="middle" fill="#94a3b8" font-size="11">WROOM-32 (30-pin)</text>
+        <!-- USB Port at Bottom -->
+        <rect x="75" y="325" width="50" height="20" rx="3" fill="#cbd5e1" stroke="#64748b"/>
+        <text x="100" y="338" text-anchor="middle" fill="#0f172a" font-size="9" font-weight="bold">USB</text>
+
+        <!-- Left Header Pins -->
+        <!-- Labels & Pin Dots -->
+        <text x="8" y="30" fill="#f87171" font-size="9" font-family="monospace">VIN</text>
+        <text x="8" y="50" fill="#38bdf8" font-size="9" font-family="monospace" font-weight="bold">GND ●</text>
+        <text x="8" y="70" fill="#fb7185" font-size="9" font-family="monospace">D13 (N.Red)</text>
+        <text x="8" y="90" fill="#94a3b8" font-size="9" font-family="monospace">D12</text>
+        <text x="8" y="110" fill="#facc15" font-size="9" font-family="monospace">D14 (N.Yel)</text>
+        <text x="8" y="130" fill="#4ade80" font-size="9" font-family="monospace">D27 (W.Grn)</text>
+        <text x="8" y="150" fill="#facc15" font-size="9" font-family="monospace">D26 (W.Yel)</text>
+        <text x="8" y="170" fill="#fb7185" font-size="9" font-family="monospace">D25 (W.Red)</text>
+        <text x="8" y="190" fill="#94a3b8" font-size="9" font-family="monospace">D33</text>
+        <text x="8" y="210" fill="#94a3b8" font-size="9" font-family="monospace">D32</text>
+        <text x="8" y="230" fill="#94a3b8" font-size="9" font-family="monospace">D35</text>
+        <text x="8" y="250" fill="#94a3b8" font-size="9" font-family="monospace">D34</text>
+        <text x="8" y="270" fill="#94a3b8" font-size="9" font-family="monospace">VN</text>
+        <text x="8" y="290" fill="#94a3b8" font-size="9" font-family="monospace">VP</text>
+        <text x="8" y="310" fill="#94a3b8" font-size="9" font-family="monospace">EN</text>
+
+        <!-- Right Header Pins -->
+        <text x="192" y="30" text-anchor="end" fill="#f87171" font-size="9" font-family="monospace">3V3</text>
+        <text x="192" y="50" text-anchor="end" fill="#38bdf8" font-size="9" font-family="monospace" font-weight="bold">● GND</text>
+        <text x="192" y="70" text-anchor="end" fill="#94a3b8" font-size="9" font-family="monospace">D15</text>
+        <text x="192" y="90" text-anchor="end" fill="#94a3b8" font-size="9" font-family="monospace">D2</text>
+        <text x="192" y="110" text-anchor="end" fill="#94a3b8" font-size="9" font-family="monospace">D4</text>
+        <text x="192" y="130" text-anchor="end" fill="#4ade80" font-size="9" font-family="monospace">RX2/16 (N.Grn)</text>
+        <text x="192" y="150" text-anchor="end" fill="#fb7185" font-size="9" font-family="monospace">TX2/17 (S.Red)</text>
+        <text x="192" y="170" text-anchor="end" fill="#94a3b8" font-size="9" font-family="monospace">D5</text>
+        <text x="192" y="190" text-anchor="end" fill="#facc15" font-size="9" font-family="monospace">D18 (S.Yel)</text>
+        <text x="192" y="210" text-anchor="end" fill="#4ade80" font-size="9" font-family="monospace">D19 (S.Grn)</text>
+        <text x="192" y="230" text-anchor="end" fill="#fb7185" font-size="9" font-family="monospace">D21 (E.Red)</text>
+        <text x="192" y="250" text-anchor="end" fill="#94a3b8" font-size="9" font-family="monospace">RX0</text>
+        <text x="192" y="270" text-anchor="end" fill="#94a3b8" font-size="9" font-family="monospace">TX0</text>
+        <text x="192" y="290" text-anchor="end" fill="#facc15" font-size="9" font-family="monospace">D22 (E.Yel)</text>
+        <text x="192" y="310" text-anchor="end" fill="#4ade80" font-size="9" font-family="monospace">D23 (E.Grn)</text>
+
+        <!-- ESP32 GND wire to bus -->
+        <path d="M 0 46 L -350 46 L -350 540" stroke="#38bdf8" stroke-width="3" fill="none"/>
+      </g>
+
+      <!-- ==================== NORTH APPROACH (TOP) ==================== -->
+      <!-- Box -->
+      <rect x="350" y="20" width="350" height="150" rx="8" fill="#131d2e" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="525" y="42" text-anchor="middle" fill="#38bdf8" font-size="14" font-weight="bold">NORTH APPROACH (3 Discrete 2-Pin LEDs)</text>
+
+      <!-- N RED LED -->
+      <g transform="translate(400, 60)">
+        <!-- 5mm LED Body -->
+        <circle cx="20" cy="20" r="14" fill="#ef4444" filter="url(#glow-red)"/>
+        <text x="20" y="5" text-anchor="middle" fill="#fca5a5" font-size="11" font-weight="bold">Red</text>
+        <!-- Leg 1: Anode (+) -->
+        <line x1="14" y1="34" x2="14" y2="60" stroke="#cbd5e1" stroke-width="2"/>
+        <text x="7" y="52" fill="#ef4444" font-size="10" font-weight="bold">+</text>
+        <!-- Resistor 220 Ohm -->
+        <rect x="8" y="60" width="12" height="24" rx="2" fill="#d97706" stroke="#fef08a"/>
+        <text x="25" y="76" fill="#fef08a" font-size="9">220Ω</text>
+        <line x1="14" y1="84" x2="14" y2="100" stroke="#cbd5e1" stroke-width="2"/>
+        <!-- Wire to GPIO 13 -->
+        <path d="M 14 100 L 14 125 L 30 125 L 30 240" stroke="#ef4444" stroke-width="2" fill="none"/>
+        <!-- Leg 2: Cathode (-) -->
+        <line x1="26" y1="34" x2="26" y2="95" stroke="#94a3b8" stroke-width="2"/>
+        <text x="31" y="52" fill="#38bdf8" font-size="10" font-weight="bold">-</text>
+        <path d="M 26 95 L -320 95 L -320 710" stroke="#38bdf8" stroke-width="2" fill="none"/>
+      </g>
+
+      <!-- N YELLOW LED -->
+      <g transform="translate(505, 60)">
+        <circle cx="20" cy="20" r="14" fill="#eab308" filter="url(#glow-yellow)"/>
+        <text x="20" y="5" text-anchor="middle" fill="#fde047" font-size="11" font-weight="bold">Yellow</text>
+        <!-- Leg 1: Anode (+) -->
+        <line x1="14" y1="34" x2="14" y2="60" stroke="#cbd5e1" stroke-width="2"/>
+        <text x="7" y="52" fill="#eab308" font-size="10" font-weight="bold">+</text>
+        <rect x="8" y="60" width="12" height="24" rx="2" fill="#d97706" stroke="#fef08a"/>
+        <text x="25" y="76" fill="#fef08a" font-size="9">220Ω</text>
+        <line x1="14" y1="84" x2="14" y2="100" stroke="#cbd5e1" stroke-width="2"/>
+        <!-- Wire to GPIO 14 -->
+        <path d="M 14 100 L 14 140 L -90 140 L -90 280" stroke="#eab308" stroke-width="2" fill="none"/>
+        <!-- Leg 2: Cathode (-) -->
+        <line x1="26" y1="34" x2="26" y2="95" stroke="#94a3b8" stroke-width="2"/>
+        <text x="31" y="52" fill="#38bdf8" font-size="10" font-weight="bold">-</text>
+        <path d="M 26 95 L -425 95 L -425 710" stroke="#38bdf8" stroke-width="2" fill="none"/>
+      </g>
+
+      <!-- N GREEN LED -->
+      <g transform="translate(610, 60)">
+        <circle cx="20" cy="20" r="14" fill="#22c55e" filter="url(#glow-green)"/>
+        <text x="20" y="5" text-anchor="middle" fill="#86efac" font-size="11" font-weight="bold">Green</text>
+        <!-- Leg 1: Anode (+) -->
+        <line x1="14" y1="34" x2="14" y2="60" stroke="#cbd5e1" stroke-width="2"/>
+        <text x="7" y="52" fill="#22c55e" font-size="10" font-weight="bold">+</text>
+        <rect x="8" y="60" width="12" height="24" rx="2" fill="#d97706" stroke="#fef08a"/>
+        <text x="25" y="76" fill="#fef08a" font-size="9">220Ω</text>
+        <line x1="14" y1="84" x2="14" y2="100" stroke="#cbd5e1" stroke-width="2"/>
+        <!-- Wire to RX2 (GPIO 16) -->
+        <path d="M 14 100 L 14 150 L 30 150 L 30 300" stroke="#22c55e" stroke-width="2" fill="none"/>
+        <!-- Leg 2: Cathode (-) -->
+        <line x1="26" y1="34" x2="26" y2="95" stroke="#94a3b8" stroke-width="2"/>
+        <text x="31" y="52" fill="#38bdf8" font-size="10" font-weight="bold">-</text>
+        <path d="M 26 95 L 360 95 L 360 710" stroke="#38bdf8" stroke-width="2" fill="none"/>
+      </g>
+
+
+      <!-- ==================== WEST APPROACH (LEFT) ==================== -->
+      <rect x="30" y="270" width="320" height="260" rx="8" fill="#131d2e" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="190" y="295" text-anchor="middle" fill="#38bdf8" font-size="14" font-weight="bold">WEST APPROACH (3 Discrete 2-Pin LEDs)</text>
+
+      <!-- W RED LED -->
+      <g transform="translate(60, 320)">
+        <circle cx="20" cy="20" r="14" fill="#ef4444" filter="url(#glow-red)"/>
+        <text x="45" y="24" fill="#fca5a5" font-size="11" font-weight="bold">Red</text>
+        <!-- Leg 1 (+) -->
+        <line x1="14" y1="34" x2="14" y2="55" stroke="#cbd5e1" stroke-width="2"/>
+        <text x="5" y="48" fill="#ef4444" font-size="10" font-weight="bold">+</text>
+        <rect x="8" y="55" width="12" height="22" rx="2" fill="#d97706" stroke="#fef08a"/>
+        <line x1="14" y1="77" x2="14" y2="90" stroke="#cbd5e1" stroke-width="2"/>
+        <!-- To D25 -->
+        <path d="M 14 90 L 14 110 L 365 110 L 365 80" stroke="#ef4444" stroke-width="2" fill="none"/>
+        <!-- Leg 2 (-) -->
+        <line x1="26" y1="34" x2="26" y2="90" stroke="#94a3b8" stroke-width="2"/>
+        <text x="31" y="48" fill="#38bdf8" font-size="10" font-weight="bold">-</text>
+        <path d="M 26 90 L 26 450" stroke="#38bdf8" stroke-width="2" fill="none"/>
+      </g>
+
+      <!-- W YELLOW LED -->
+      <g transform="translate(150, 320)">
+        <circle cx="20" cy="20" r="14" fill="#eab308" filter="url(#glow-yellow)"/>
+        <text x="45" y="24" fill="#fde047" font-size="11" font-weight="bold">Yel</text>
+        <!-- Leg 1 (+) -->
+        <line x1="14" y1="34" x2="14" y2="55" stroke="#cbd5e1" stroke-width="2"/>
+        <text x="5" y="48" fill="#eab308" font-size="10" font-weight="bold">+</text>
+        <rect x="8" y="55" width="12" height="22" rx="2" fill="#d97706" stroke="#fef08a"/>
+        <line x1="14" y1="77" x2="14" y2="90" stroke="#cbd5e1" stroke-width="2"/>
+        <!-- To D26 -->
+        <path d="M 14 90 L 14 125 L 275 125 L 275 60" stroke="#eab308" stroke-width="2" fill="none"/>
+        <!-- Leg 2 (-) -->
+        <line x1="26" y1="34" x2="26" y2="90" stroke="#94a3b8" stroke-width="2"/>
+        <text x="31" y="48" fill="#38bdf8" font-size="10" font-weight="bold">-</text>
+        <path d="M 26 90 L 26 450" stroke="#38bdf8" stroke-width="2" fill="none"/>
+      </g>
+
+      <!-- W GREEN LED -->
+      <g transform="translate(240, 320)">
+        <circle cx="20" cy="20" r="14" fill="#22c55e" filter="url(#glow-green)"/>
+        <text x="45" y="24" fill="#86efac" font-size="11" font-weight="bold">Grn</text>
+        <!-- Leg 1 (+) -->
+        <line x1="14" y1="34" x2="14" y2="55" stroke="#cbd5e1" stroke-width="2"/>
+        <text x="5" y="48" fill="#22c55e" font-size="10" font-weight="bold">+</text>
+        <rect x="8" y="55" width="12" height="22" rx="2" fill="#d97706" stroke="#fef08a"/>
+        <line x1="14" y1="77" x2="14" y2="90" stroke="#cbd5e1" stroke-width="2"/>
+        <!-- To D27 -->
+        <path d="M 14 90 L 14 140 L 185 140 L 185 40" stroke="#22c55e" stroke-width="2" fill="none"/>
+        <!-- Leg 2 (-) -->
+        <line x1="26" y1="34" x2="26" y2="90" stroke="#94a3b8" stroke-width="2"/>
+        <text x="31" y="48" fill="#38bdf8" font-size="10" font-weight="bold">-</text>
+        <path d="M 26 90 L 26 450" stroke="#38bdf8" stroke-width="2" fill="none"/>
+      </g>
+
+
+      <!-- ==================== EAST APPROACH (RIGHT) ==================== -->
+      <rect x="700" y="270" width="320" height="260" rx="8" fill="#131d2e" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="860" y="295" text-anchor="middle" fill="#38bdf8" font-size="14" font-weight="bold">EAST APPROACH (3 Discrete 2-Pin LEDs)</text>
+
+      <!-- E RED LED -->
+      <g transform="translate(730, 320)">
+        <circle cx="20" cy="20" r="14" fill="#ef4444" filter="url(#glow-red)"/>
+        <text x="45" y="24" fill="#fca5a5" font-size="11" font-weight="bold">Red</text>
+        <!-- Leg 1 (+) -->
+        <line x1="14" y1="34" x2="14" y2="55" stroke="#cbd5e1" stroke-width="2"/>
+        <text x="5" y="48" fill="#ef4444" font-size="10" font-weight="bold">+</text>
+        <rect x="8" y="55" width="12" height="22" rx="2" fill="#d97706" stroke="#fef08a"/>
+        <line x1="14" y1="77" x2="14" y2="90" stroke="#cbd5e1" stroke-width="2"/>
+        <!-- To D21 -->
+        <path d="M 14 90 L 14 140 L -105 140" stroke="#ef4444" stroke-width="2" fill="none"/>
+        <!-- Leg 2 (-) -->
+        <line x1="26" y1="34" x2="26" y2="90" stroke="#94a3b8" stroke-width="2"/>
+        <text x="31" y="48" fill="#38bdf8" font-size="10" font-weight="bold">-</text>
+        <path d="M 26 90 L 26 450" stroke="#38bdf8" stroke-width="2" fill="none"/>
+      </g>
+
+      <!-- E YELLOW LED -->
+      <g transform="translate(820, 320)">
+        <circle cx="20" cy="20" r="14" fill="#eab308" filter="url(#glow-yellow)"/>
+        <text x="45" y="24" fill="#fde047" font-size="11" font-weight="bold">Yel</text>
+        <!-- Leg 1 (+) -->
+        <line x1="14" y1="34" x2="14" y2="55" stroke="#cbd5e1" stroke-width="2"/>
+        <text x="5" y="48" fill="#eab308" font-size="10" font-weight="bold">+</text>
+        <rect x="8" y="55" width="12" height="22" rx="2" fill="#d97706" stroke="#fef08a"/>
+        <line x1="14" y1="77" x2="14" y2="90" stroke="#cbd5e1" stroke-width="2"/>
+        <!-- To D22 -->
+        <path d="M 14 90 L 14 170 L -195 170 L -195 200" stroke="#eab308" stroke-width="2" fill="none"/>
+        <!-- Leg 2 (-) -->
+        <line x1="26" y1="34" x2="26" y2="90" stroke="#94a3b8" stroke-width="2"/>
+        <text x="31" y="48" fill="#38bdf8" font-size="10" font-weight="bold">-</text>
+        <path d="M 26 90 L 26 450" stroke="#38bdf8" stroke-width="2" fill="none"/>
+      </g>
+
+      <!-- E GREEN LED -->
+      <g transform="translate(910, 320)">
+        <circle cx="20" cy="20" r="14" fill="#22c55e" filter="url(#glow-green)"/>
+        <text x="45" y="24" fill="#86efac" font-size="11" font-weight="bold">Grn</text>
+        <!-- Leg 1 (+) -->
+        <line x1="14" y1="34" x2="14" y2="55" stroke="#cbd5e1" stroke-width="2"/>
+        <text x="5" y="48" fill="#22c55e" font-size="10" font-weight="bold">+</text>
+        <rect x="8" y="55" width="12" height="22" rx="2" fill="#d97706" stroke="#fef08a"/>
+        <line x1="14" y1="77" x2="14" y2="90" stroke="#cbd5e1" stroke-width="2"/>
+        <!-- To D23 -->
+        <path d="M 14 90 L 14 190 L -285 190 L -285 220" stroke="#22c55e" stroke-width="2" fill="none"/>
+        <!-- Leg 2 (-) -->
+        <line x1="26" y1="34" x2="26" y2="90" stroke="#94a3b8" stroke-width="2"/>
+        <text x="31" y="48" fill="#38bdf8" font-size="10" font-weight="bold">-</text>
+        <path d="M 26 90 L 26 450" stroke="#38bdf8" stroke-width="2" fill="none"/>
+      </g>
+
+
+      <!-- ==================== SOUTH APPROACH (BOTTOM) ==================== -->
+      <rect x="350" y="600" width="350" height="150" rx="8" fill="#131d2e" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="525" y="622" text-anchor="middle" fill="#38bdf8" font-size="14" font-weight="bold">SOUTH APPROACH (3 Discrete 2-Pin LEDs)</text>
+
+      <!-- S RED LED -->
+      <g transform="translate(400, 640)">
+        <circle cx="20" cy="20" r="14" fill="#ef4444" filter="url(#glow-red)"/>
+        <text x="20" y="5" text-anchor="middle" fill="#fca5a5" font-size="11" font-weight="bold">Red</text>
+        <!-- Leg 1 (+) -->
+        <line x1="14" y1="34" x2="14" y2="50" stroke="#cbd5e1" stroke-width="2"/>
+        <text x="7" y="46" fill="#ef4444" font-size="10" font-weight="bold">+</text>
+        <rect x="8" y="50" width="12" height="20" rx="2" fill="#d97706" stroke="#fef08a"/>
+        <line x1="14" y1="70" x2="14" y2="80" stroke="#cbd5e1" stroke-width="2"/>
+        <!-- To TX2 (GPIO 17) -->
+        <path d="M 14 80 L 14 90 L 225 90 L 225 -260" stroke="#ef4444" stroke-width="2" fill="none"/>
+        <!-- Leg 2 (-) -->
+        <line x1="26" y1="34" x2="26" y2="130" stroke="#38bdf8" stroke-width="2"/>
+        <text x="31" y="46" fill="#38bdf8" font-size="10" font-weight="bold">-</text>
+      </g>
+
+      <!-- S YELLOW LED -->
+      <g transform="translate(505, 640)">
+        <circle cx="20" cy="20" r="14" fill="#eab308" filter="url(#glow-yellow)"/>
+        <text x="20" y="5" text-anchor="middle" fill="#fde047" font-size="11" font-weight="bold">Yellow</text>
+        <!-- Leg 1 (+) -->
+        <line x1="14" y1="34" x2="14" y2="50" stroke="#cbd5e1" stroke-width="2"/>
+        <text x="7" y="46" fill="#eab308" font-size="10" font-weight="bold">+</text>
+        <rect x="8" y="50" width="12" height="20" rx="2" fill="#d97706" stroke="#fef08a"/>
+        <line x1="14" y1="70" x2="14" y2="80" stroke="#cbd5e1" stroke-width="2"/>
+        <!-- To D18 -->
+        <path d="M 14 80 L 14 100 L 120 100 L 120 -220" stroke="#eab308" stroke-width="2" fill="none"/>
+        <!-- Leg 2 (-) -->
+        <line x1="26" y1="34" x2="26" y2="130" stroke="#38bdf8" stroke-width="2"/>
+        <text x="31" y="46" fill="#38bdf8" font-size="10" font-weight="bold">-</text>
+      </g>
+
+      <!-- S GREEN LED -->
+      <g transform="translate(610, 640)">
+        <circle cx="20" cy="20" r="14" fill="#22c55e" filter="url(#glow-green)"/>
+        <text x="20" y="5" text-anchor="middle" fill="#86efac" font-size="11" font-weight="bold">Green</text>
+        <!-- Leg 1 (+) -->
+        <line x1="14" y1="34" x2="14" y2="50" stroke="#cbd5e1" stroke-width="2"/>
+        <text x="7" y="46" fill="#22c55e" font-size="10" font-weight="bold">+</text>
+        <rect x="8" y="50" width="12" height="20" rx="2" fill="#d97706" stroke="#fef08a"/>
+        <line x1="14" y1="70" x2="14" y2="80" stroke="#cbd5e1" stroke-width="2"/>
+        <!-- To D19 -->
+        <path d="M 14 80 L 14 110 L 15 110 L 15 -200" stroke="#22c55e" stroke-width="2" fill="none"/>
+        <!-- Leg 2 (-) -->
+        <line x1="26" y1="34" x2="26" y2="130" stroke="#38bdf8" stroke-width="2"/>
+        <text x="31" y="46" fill="#38bdf8" font-size="10" font-weight="bold">-</text>
+      </g>
+
+    </svg>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-color" style="background:#ef4444"></div> Red (+) Pin Wire</div>
+    <div class="legend-item"><div class="legend-color" style="background:#eab308"></div> Yellow (+) Pin Wire</div>
+    <div class="legend-item"><div class="legend-color" style="background:#22c55e"></div> Green (+) Pin Wire</div>
+    <div class="legend-item"><div class="legend-color" style="background:#38bdf8"></div> Ground (-) Common Return</div>
+    <div class="legend-item"><div class="legend-color" style="background:#d97706"></div> 220Ω Resistor</div>
+  </div>
+
+</body>
+</html>

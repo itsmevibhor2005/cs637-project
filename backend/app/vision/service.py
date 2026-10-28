@@ -1,4 +1,4 @@
-import asyncio
+﻿import asyncio
 import math
 import random
 import time
@@ -75,6 +75,8 @@ class VisionService:
         try:
             import cv2
             from ultralytics import YOLO
+            import torch
+            torch.set_num_threads(2)
         except ImportError as exc:
             raise RuntimeError(
                 "YOLO mode needs requirements-vision.txt. Use TRAFFIC_MODE=mock meanwhile."
@@ -82,7 +84,10 @@ class VisionService:
 
         model = await asyncio.to_thread(YOLO, self.model_name)
         source = int(self.source) if self.source.isdigit() else self.source
-        capture = cv2.VideoCapture(source)
+        if isinstance(source, int):
+            capture = cv2.VideoCapture(source, cv2.CAP_DSHOW)
+        else:
+            capture = cv2.VideoCapture(source)
         if not capture.isOpened():
             raise RuntimeError(f"Could not open VIDEO_SOURCE={self.source}")
 
@@ -135,7 +140,7 @@ class VisionService:
                 if encoded:
                     async with self._jpeg_lock:
                         self._jpeg = jpeg.tobytes()
-                await asyncio.sleep(0)
+                await asyncio.sleep(0.04)
         finally:
             capture.release()
 
@@ -146,3 +151,4 @@ class VisionService:
             if frame:
                 yield b"--frame\r\nContent-Type: image/jpeg\r\n\r\n" + frame + b"\r\n"
             await asyncio.sleep(0.08)
+

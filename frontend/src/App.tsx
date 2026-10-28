@@ -86,20 +86,20 @@ function ApproachCard({
       <TrafficLight color={signal} />
       <div className="approach-stats">
         <div>
-          <b>{data.vehicles}</b>
+          <b>{data?.vehicles ?? 0}</b>
           <small>Vehicles</small>
         </div>
         <div>
-          <b>{data.queue}</b>
+          <b>{data?.queue ?? 0}</b>
           <small>In queue</small>
         </div>
         <div>
-          <b>{Math.round(data.demand)}</b>
+          <b>{Math.round(data?.demand ?? 0)}</b>
           <small>Demand</small>
         </div>
       </div>
       <div className="demand-track">
-        <span style={{ width: `${Math.min(100, data.demand * 2.2)}%` }} />
+        <span style={{ width: `${Math.min(100, (data?.demand ?? 0) * 2.2)}%` }} />
       </div>
     </article>
   );
@@ -224,9 +224,26 @@ export default function App() {
       </header>
 
       {error && (
-        <div className="alert">
-          <AlertTriangle size={17} />
-          {error}
+        <div className="alert" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <AlertTriangle size={17} />
+            {error}
+          </div>
+          <button
+            onClick={() => setError(null)}
+            style={{
+              background: "transparent",
+              border: "none",
+              color: "inherit",
+              cursor: "pointer",
+              fontSize: "14px",
+              padding: "0 4px",
+              lineHeight: 1
+            }}
+            title="Dismiss error"
+          >
+            ✕
+          </button>
         </div>
       )}
 
@@ -250,7 +267,7 @@ export default function App() {
           </div>
           <div className="phase-meta">
             <span>
-              Next <b>{state?.next_phase.replaceAll("_", " ") || "N GREEN"}</b>
+              Next <b>{state?.next_phase?.replaceAll("_", " ") || "N GREEN"}</b>
             </span>
             <span>
               Completed phases <b>#{state?.cycle ?? 0}</b>
@@ -354,25 +371,64 @@ export default function App() {
         </div>
 
         <aside className="side-stack">
+          {state?.ai_mode === "yolo" && (
+            <div className="panel video-panel" style={{ padding: "16px" }}>
+              <div className="eyebrow">
+                <Radio size={14} /> Live camera feed
+              </div>
+              <h2 style={{ fontSize: "16px", margin: "4px 0 10px 0" }}>YOLO Vision (Webcam)</h2>
+              <div style={{ borderRadius: "8px", overflow: "hidden", border: "1px solid #294438", background: "#050a08" }}>
+                {state?.ai_running ? (
+                  <img
+                    src={`${API}/api/video.mjpg`}
+                    alt="Live YOLO Detection"
+                    style={{ width: "100%", display: "block", aspectRatio: "4/3", objectFit: "cover" }}
+                  />
+                ) : (
+                  <div
+                    style={{
+                      aspectRatio: "4/3",
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      color: "#7fa693",
+                      fontSize: "13px",
+                      gap: "8px",
+                      padding: "20px",
+                      textAlign: "center"
+                    }}
+                  >
+                    <Radio size={24} style={{ opacity: 0.5 }} />
+                    <span>Vision Standby</span>
+                    <small style={{ color: "#4f7360" }}>Click "Start system" to activate live YOLO detection</small>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
           <div className="panel demand-panel">
             <div className="eyebrow">Demand matrix</div>
             <h2>Approach pressure</h2>
-            {directions.map((d) => (
-              <div className="demand-row" key={d}>
-                <span>
-                  <b>{d}</b>
-                  {labels[d]}
-                </span>
-                <div>
-                  <i
-                    style={{
-                      width: `${Math.min(100, traffic[d].demand * 2.2)}%`,
-                    }}
-                  />
+            {directions.map((d) => {
+              const row = traffic[d] || emptyTraffic;
+              return (
+                <div className="demand-row" key={d}>
+                  <span>
+                    <b>{d}</b>
+                    {labels[d]}
+                  </span>
+                  <div>
+                    <i
+                      style={{
+                        width: `${Math.min(100, (row?.demand ?? 0) * 2.2)}%`,
+                      }}
+                    />
+                  </div>
+                  <strong>{Math.round(row?.demand ?? 0)}</strong>
                 </div>
-                <strong>{Math.round(traffic[d].demand)}</strong>
-              </div>
-            ))}
+              );
+            })}
           </div>
           <div className="panel hardware-panel">
             <div className="eyebrow">Hardware link</div>
@@ -380,17 +436,17 @@ export default function App() {
             <dl>
               <div>
                 <dt>Status</dt>
-                <dd className={state?.esp32.connected ? "good" : "bad"}>
-                  {state?.esp32.connected ? "Connected" : "Disconnected"}
+                <dd className={state?.esp32?.connected ? "good" : "bad"}>
+                  {state?.esp32?.connected ? "Connected" : "Disconnected"}
                 </dd>
               </div>
               <div>
                 <dt>Transport</dt>
-                <dd>{state?.esp32.mode || "—"}</dd>
+                <dd>{state?.esp32?.mode || "—"}</dd>
               </div>
               <div>
                 <dt>Last ACK</dt>
-                <dd className="mono">{state?.esp32.last_ack || "Waiting…"}</dd>
+                <dd className="mono">{state?.esp32?.last_ack || "Waiting…"}</dd>
               </div>
             </dl>
           </div>
@@ -403,3 +459,4 @@ export default function App() {
     </main>
   );
 }
+
